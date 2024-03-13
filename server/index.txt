@@ -1,0 +1,965 @@
+// // 
+
+
+// const express = require('express');
+// const cors = require('cors');
+// const bodyParser = require('body-parser');
+// const nodemailer = require('nodemailer');
+// const mongoose = require('mongoose');
+// const multer = require('multer');
+// const AWS = require('aws-sdk');
+// const app = express();
+// const moment = require("moment");
+// const port = process.env.PORT || 3001;
+// app.use(cors());
+// app.use(bodyParser.json());
+
+// const storage = multer.memoryStorage();
+// const upload = multer({ storage: storage });
+
+// // AWS SDK Configuration
+// AWS.config.update({
+//   accessKeyId: 'AKIA47CRYM5DWZUE6HQX', // Replace with your AWS access key ID
+//   secretAccessKey: 'RQhphmk6HXUF12Ns2+6LiaNpB433GDQNDWV/g+4h',
+//   region: 'ap-south-2'
+// });
+
+// // S3 Configuration
+// const s3 = new AWS.S3();
+
+// // Handle file upload directly to S3
+
+// app.post('/upload', upload.single('file'), async (req, res) => {
+//   if (!req.file) {
+//     return res.status(400).json({ message: 'No file uploaded' });
+//   }
+
+//   // Specify S3 upload parameters
+//   const folderName = 'filestorage';
+//   const date = new Date();
+
+//   const formattedDate = moment(date).format('MM-DD-YYYY');
+
+//   console.log(formattedDate);
+//   const params = {
+//     Bucket: 's3storagedetailss',      // Replace with your S3 bucket name
+//     Key: `${folderName}/${formattedDate}_${req.file.originalname}`,
+//     Body: req.file.buffer,
+//     ACL: 'private'                      // Set ACL to private for restricted access
+//   };
+
+//   // Upload to S3
+//   s3.upload(params, (err, data) => {
+//     if (err) {
+//       console.error(err);
+//       return res.status(500).json({ message: 'Failed to upload file to S3' });
+//     }
+//     res.json({ url: data.Location });
+//   });
+// });
+
+// // Serve uploaded files
+// app.use('/uploads', express.static('uploads'));
+
+// // Connect to the MongoDB database
+// const connectDb = async () => {
+//   try {
+//     await mongoose.connect('mongodb://localhost:27017/Assetdata', {
+//       useNewUrlParser: true,
+//       useUnifiedTopology: true,
+//     });
+
+//     // Create default users if they don't exist
+//     const defaultUser1 = await User.findOne({ email: 'shaikdadavali092@gmail.com' });
+//     const defaultUser2 = await User.findOne({ email: 'vemanasrikanth73829@gmail.com' });
+//     const defaultUser3 = await User.findOne({ email: 'vramasrikanth@gmail.com' });
+
+//     if (!defaultUser1) {
+//       await User.create({
+//         email: 'shaikdadavali092@gmail.com',
+//         CreatedBy: 'dadavali',
+//         password: 'hhwp sfvi pvlr ufzx',
+//         role: 'role1',
+//       });
+//       console.log('Default user 1 created');
+//     }
+
+//     if (!defaultUser2) {
+//       await User.create({
+//         email: 'vemanasrikanth73829@gmail.com',
+//         CreatedBy: 'Srikanth',
+//         password: 'dvpi eiou ojub exkk',
+//         role: 'role2',
+//       });
+//       console.log('Default user 2 created');
+//     }
+
+//     if (!defaultUser3) {
+//       await User.create({
+//         email: 'vramasrikanth@gmail.com',
+//         CreatedBy: 'RamaSrikanth',
+//         password: 'mfsa otex amvm kwqi',
+//         role: 'role3',
+//       });
+//       console.log('Default user 3 created');
+//     }
+
+//     console.log('Db connected');
+//   } catch (error) {
+//     console.log('Failed to connect!', error);
+//   }
+// };
+
+// // User Schema
+// const userSchema = new mongoose.Schema({
+//   email: { type: String, required: true },
+//   CreatedBy: { type: String, required: true },
+//   password: { type: String, required: true },
+//   role: { type: String, required: true },
+// });
+
+// //working on storing document url in mongodb for assetmanagement
+// // Function to format date to MM-DD-YYYY
+// function formatDate(date) {
+//   const options = {
+//     year: '2-digit',
+//     month: '2-digit',
+//     day: '2-digit',
+//   };
+
+//   const formattedDate = new Intl.DateTimeFormat('en-US', options).format(date);
+
+//   return formattedDate;
+// }
+
+// // Asset Schema
+// const assetDetailsSchema = new mongoose.Schema({
+//   assetType: { type: String, required: true },
+//   Quantity: { type: Number, required: true },
+//   unitPrice: { type: Number, required: true },
+//   totalPrice: { type: Number, required: true },
+//   status: { type: String, default: 'Pending' },
+//   CreatedBy: { type: String, ref: 'User' },
+//   CreatedDate: { type: String, default: formatDate(new Date()) },
+//   UpdatedDate: { type: String, default: formatDate(new Date()) },
+//   ProgressLevel: { type: String, default: 'level1' },
+//   url: { type: String },
+//   hiddenField: { type: String, select: false },
+// });
+
+// // API endpoint to register a new user
+// app.post('/registerUser', async (req, res) => {
+//   try {
+//     const { email, name, password, role } = req.body;
+//     if (!email || !name || !password || !role) {
+//       return res.status(400).json({ error: 'All fields are required' });
+//     }
+
+//     const existingUser = await User.findOne({ email });
+
+//     if (existingUser) {
+//       return res.status(400).json({ error: 'User with this email already exists' });
+//     }
+
+//     // Save the 'name' field when creating a new user
+//     const newUser = await User.create({ email, name, password, role });
+
+//     res.status(200).json({ message: 'User registered successfully', user: newUser });
+//   } catch (error) {
+//     console.error('Failed to register user:', error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
+
+
+// // Pre-save hook to format dates
+// assetDetailsSchema.pre('save', function (next) {
+//   // Format CreatedDate
+//   this.CreatedDate = formatDate(new Date());
+
+//   // Format UpdatedDate
+//   this.UpdatedDate = formatDate(new Date());
+
+//   next();
+// });
+
+
+
+// // Create models from schemas
+// const User = mongoose.model('User', userSchema);
+// const AssetDetails = mongoose.model('AssetDetails', assetDetailsSchema);
+
+// // Connect to the database
+// connectDb();
+
+// // Endpoint to fetch user data by email
+// app.get('/getUser/:email', async (req, res) => {
+//   try {
+//     const userEmail = req.params.email;
+//     const user = await User.findOne({ email: userEmail });
+
+//     if (!user) {
+//       return res.status(404).json({ error: 'User not found' });
+//     }
+
+//     // Exclude password before sending the user data to the frontend
+//     const { name, email, role } = user.toObject();
+//     res.status(200).json({ name, email, role });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
+
+// // Approval endpoint backend code
+// app.post('/approveAsset/:id', async (req, res) => {
+//   try {
+//     const assetId = req.params.id;
+//     const asset = await AssetDetails.findById(assetId);
+
+//     if (!asset) {
+//       return res.status(404).json({ error: 'Asset not found' });
+//     }
+
+//     // Check if status is provided in the request body
+//     const status = req.body.status;
+
+//     if (!status) {
+//       return res.status(400).json({ error: 'Status is required in the request body' });
+//     }
+
+//     asset.status = status;
+
+//     await asset.save();
+
+//     // Send email to 'vramasrikanth@gmail.com' for approval
+//     await sendEmail(asset.toObject(), 'vramasrikanth@gmail.com');
+
+//     res.status(200).json({ message: 'Asset approved successfully', asset });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
+
+// // Modify asset endpoint
+// app.post('/modifyAsset/:id', async (req, res) => {
+//   try {
+//     const assetId = req.params.id;
+//     const updatedData = req.body;
+//     const asset = await AssetDetails.findById(assetId);
+
+//     if (!asset) {
+//       return res.status(404).json({ error: 'Asset not found' });
+//     }
+
+//     // Update the asset data
+//     asset.assetType = updatedData.assetType;
+//     asset.Quantity = updatedData.Quantity;
+//     asset.unitPrice = updatedData.unitPrice;
+//     asset.totalPrice = updatedData.totalPrice;
+
+//     // Save the updated asset
+//     await asset.save();
+
+//     res.status(200).json({ message: 'Asset updated successfully', asset });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
+
+
+// // progresslevel
+// app.post('/updateProgressLevel/:id', async (req, res) => {
+//   try {
+//     const assetId = req.params.id;
+//     const { progressLevel } = req.body;
+
+//     const asset = await AssetDetails.findById(assetId);
+
+
+//     if (!asset) {
+//       return res.status(404).json({ error: 'Asset not found' });
+//     }
+
+//     asset.ProgressLevel = progressLevel;
+
+//     await asset.save();
+
+//     res.status(200).json({ message: 'ProgressLevel updated successfully', asset });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
+
+// // Reject asset endpoint
+// app.post('/rejectAsset/:id', async (req, res) => {
+//   try {
+//     const assetId = req.params.id;
+//     const asset = await AssetDetails.findById(assetId);
+
+//     if (!asset) {
+//       return res.status(404).json({ error: 'Asset not found' });
+//     }
+
+//     asset.status = 'Rejected';
+//     await asset.save();
+
+//     res.status(200).json({ message: 'Asset rejected successfully', asset });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
+
+// // Form submission endpoint
+// app.post('/submitForm', async (req, res) => {
+//   try {
+
+//     const formData = req.body; 
+//     const assetId = formData._id; // Assume _id is sent from the frontend when modifying
+
+//     if (assetId) {
+//       // If assetId is provided, update the existing asset
+//       const existingAsset = await AssetDetails.findById(assetId);
+
+//       if (!existingAsset) {
+//         return res.status(404).json({ error: 'Asset not found for modification' });
+//       }
+
+//       existingAsset.assetType = formData.assetType;
+//       existingAsset.Quantity = formData.Quantity;
+//       existingAsset.unitPrice = formData.unitPrice;
+//       existingAsset.totalPrice = formData.totalPrice;
+
+//       // Add CreatedBy field when updating the asset
+//       existingAsset.CreatedBy = formData.CreatedBy;
+
+//       await existingAsset.save();
+
+//       res.status(200).json({ message: 'Asset updated successfully', asset: existingAsset });
+//     } else {
+//       // If assetId is not provided, create a new asset
+//       // Fetch user details based on the submitted email
+//       const user = await User.findOne({ email: 'shaikdadavali092@gmail.com' });
+
+    
+    
+//       if (!user) {
+//         return res.status(404).json({ error: 'User not found for the submitted email' });
+//       }
+
+            
+//       // const urlToStore = 'https://publuu.com/flip-book/403396/913151/page/1';
+ 
+      
+
+//       // if (!urlToStore) {
+//       //   return res.status(400).json({ error: 'URL is required in the form data' });
+//       // }    
+//       // console.log( urlToStore);       
+
+
+//       const asset = await AssetDetails.create({
+//         ...formData,
+//         // Add CreatedBy field with the user's name when creating a new asset
+//         CreatedBy: user.CreatedBy,
+//         //  url:urlToStore,
+//       });
+
+//       await sendEmail(asset, 'vemanasrikanth73829@gmail.com');
+//       res.status(200).json({ message: 'Form submitted successfully', asset });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
+
+// // Get all assets endpoint
+// app.get('/getData', async (req, res) => {
+//   try {
+//     const assets = await AssetDetails.find();
+//     res.status(200).json({ message: 'Assets fetched successfully', assets });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
+
+// // Function to send email
+// const sendEmail = async (formData, toEmail,attachmentUrl) => {
+//   console.log(formData)
+//   try {
+//     // Nodemailer configuration
+//     const transporter = nodemailer.createTransport({
+//       service: 'gmail',
+//       auth: {
+//         user: 'shaikdadavali092@gmail.com',
+//         pass: 'hhwp sfvi pvlr ufzx',
+//       },
+//     });
+
+   
+//     // Email content
+//     const emailContent = `
+//        <h2>Form Data</h2>
+//        <table border="1">
+//          <tr>
+//            <td>Select_Asset</td>
+//            <td>${formData.assetType}</td>
+//          </tr>
+//          <td>Quantity</td>
+//            <td>${formData.Quantity}</td>
+//          </tr>
+//          <tr>
+//            <td>Unit Price</td>
+//            <td>${formData.unitPrice}</td>
+//          </tr>
+//          <tr>
+//            <td>Total price</td>
+//            <td>${formData.totalPrice}</td>
+//          </tr>
+//        </table>
+//        <p>Click <a href="http://localhost:3000/inboxpage">here</a> to view the details in the application.</p>
+      
+//       //  <p>Click <a href="https://publuu.com/flip-book/403396/913151/page/1">here</a> to view the laptop Pdf.</p>
+
+       
+//      `;
+
+//     // Mail options
+//     const mailOptions = {
+//       from: 'your@.com',
+//       to: toEmail,
+//       subject: 'Form Submission',
+//       html: emailContent,
+//       attachments: [
+//         {
+//           filename: 'laptop.pdf',
+//           path: formData.url, // Path to the PDF file on the server
+//           encoding: 'base64',
+//         },
+//       ],
+//     };
+
+//     // Send email
+//     await transporter.sendMail(mailOptions);
+//     console.log('Email sent successfully');
+//   } catch (error) {
+//     console.error('Failed to send email:', error);
+//     throw error;
+//   }
+// };
+
+// // Serve PDF file
+// app.get('/getPdf/:id', async (req, res) => {
+//   try {
+//     const assetId = req.params.id;
+//     const asset = await AssetDetails.findById(assetId);
+
+//     if (!asset || !asset.url) {
+//       return res.status(404).json({ error: 'PDF not found for this asset' });
+//     }
+
+//     const url = asset.url;
+//    console.log(url)
+//     // Redirect to the PDF URL
+//     res.redirect(url);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
+
+// // Start the server
+// app.listen(port, () => {
+//   console.log(`API Server is running on port ${port}`);
+// });
+
+
+
+
+
+
+
+// 
+
+
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
+const multer = require('multer');
+const AWS = require('aws-sdk');
+const app = express();
+const moment = require("moment");
+const port = process.env.PORT || 3001;
+app.use(cors());
+app.use(bodyParser.json());
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+// AWS SDK Configuration
+AWS.config.update({
+  accessKeyId: 'AKIA47CRYM5DWZUE6HQX', // Replace with your AWS access key ID
+  secretAccessKey: 'RQhphmk6HXUF12Ns2+6LiaNpB433GDQNDWV/g+4h',
+  region: 'ap-south-2'
+});
+
+// S3 Configuration
+const s3 = new AWS.S3();
+
+// Handle file upload directly to S3
+
+app.post('/upload', upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+
+  // Specify S3 upload parameters
+  const folderName = 'filestorage';
+  const date = new Date();
+
+  const formattedDate = moment(date).format('MM-DD-YYYY');
+
+  console.log(formattedDate);
+  const params = {
+    Bucket: 's3storagedetailss',      // Replace with your S3 bucket name
+    Key: `${folderName}/${formattedDate}_${req.file.originalname}`,
+    Body: req.file.buffer,
+    ACL: 'private'                      // Set ACL to private for restricted access
+  };
+
+  // Upload to S3
+  s3.upload(params, (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Failed to upload file to S3' });
+    }
+    res.json({ url: data.Location });
+  });
+});
+
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'));
+
+// Connect to the MongoDB database
+const connectDb = async () => {
+  try {
+    await mongoose.connect('mongodb://localhost:27017/Assetdata', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    // Create default users if they don't exist
+    const defaultUser1 = await User.findOne({ email: 'shaikdadavali092@gmail.com' });
+    const defaultUser2 = await User.findOne({ email: 'vemanasrikanth73829@gmail.com' });
+    const defaultUser3 = await User.findOne({ email: 'vramasrikanth@gmail.com' });
+
+    if (!defaultUser1) {
+      await User.create({
+        email: 'shaikdadavali092@gmail.com',
+        CreatedBy: 'dadavali',
+        password: 'hhwp sfvi pvlr ufzx',
+        role: 'role1',
+      });
+      console.log('Default user 1 created');
+    }
+
+    if (!defaultUser2) {
+      await User.create({
+        email: 'vemanasrikanth73829@gmail.com',
+        CreatedBy: 'Srikanth',
+        password: 'dvpi eiou ojub exkk',
+        role: 'role2',
+      });
+      console.log('Default user 2 created');
+    }
+
+    if (!defaultUser3) {
+      await User.create({
+        email: 'vramasrikanth@gmail.com',
+        CreatedBy: 'RamaSrikanth',
+        password: 'mfsa otex amvm kwqi',
+        role: 'role3',
+      });
+      console.log('Default user 3 created');
+    }
+
+    console.log('Db connected');
+  } catch (error) {
+    console.log('Failed to connect!', error);
+  }
+};
+
+// User Schema
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  CreatedBy: { type: String, required: true },
+  password: { type: String, required: true },
+  role: { type: String, required: true },
+});
+
+//working on storing document url in mongodb for assetmanagement
+// Function to format date to MM-DD-YYYY
+function formatDate(date) {
+  const options = {
+    year: '2-digit',
+    month: '2-digit',
+    day: '2-digit',
+  };
+
+  const formattedDate = new Intl.DateTimeFormat('en-US', options).format(date);
+
+  return formattedDate;
+}
+
+// Asset Schema
+const assetDetailsSchema = new mongoose.Schema({
+  assetType: { type: String, required: true },
+  Quantity: { type: Number, required: true },
+  unitPrice: { type: Number, required: true },
+  totalPrice: { type: Number, required: true },
+  status: { type: String, default: 'Pending' },
+  CreatedBy: { type: String, ref: 'User' },
+  CreatedDate: { type: String, default: formatDate(new Date()) },
+  UpdatedDate: { type: String, default: formatDate(new Date()) },
+  ProgressLevel: { type: String, default: 'level1' },
+  url: { type: String },
+  hiddenField: { type: String, select: false },
+});
+
+// API endpoint to register a new user
+app.post('/registerUser', async (req, res) => {
+  try {
+    const { email, name, password, role } = req.body;
+    if (!email || !name || !password || !role) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'User with this email already exists' });
+    }
+
+    // Save the 'name' field when creating a new user
+    const newUser = await User.create({ email, name, password, role });
+
+    res.status(200).json({ message: 'User registered successfully', user: newUser });
+  } catch (error) {
+    console.error('Failed to register user:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// Pre-save hook to format dates
+assetDetailsSchema.pre('save', function (next) {
+  // Format CreatedDate
+  this.CreatedDate = formatDate(new Date());
+
+  // Format UpdatedDate
+  this.UpdatedDate = formatDate(new Date());
+
+  next();
+});
+
+
+
+// Create models from schemas
+const User = mongoose.model('User', userSchema);
+const AssetDetails = mongoose.model('AssetDetails', assetDetailsSchema);
+
+// Connect to the database
+connectDb();
+
+// Endpoint to fetch user data by email
+app.get('/getUser/:email', async (req, res) => {
+  try {
+    const userEmail = req.params.email;
+    const user = await User.findOne({ email: userEmail });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Exclude password before sending the user data to the frontend
+    const { name, email, role } = user.toObject();
+    res.status(200).json({ name, email, role });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Approval endpoint backend code
+app.post('/approveAsset/:id', async (req, res) => {
+  try {
+    const assetId = req.params.id;
+    const asset = await AssetDetails.findById(assetId);
+
+    if (!asset) {
+      return res.status(404).json({ error: 'Asset not found' });
+    }
+
+    // Check if status is provided in the request body
+    const status = req.body.status;
+
+    if (!status) {
+      return res.status(400).json({ error: 'Status is required in the request body' });
+    }
+
+    asset.status = status;
+
+    await asset.save();
+
+    // Send email to 'vramasrikanth@gmail.com' for approval
+    await sendEmail(asset.toObject(), 'vramasrikanth@gmail.com');
+
+    res.status(200).json({ message: 'Asset approved successfully', asset });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Modify asset endpoint
+app.post('/modifyAsset/:id', async (req, res) => {
+  try {
+    const assetId = req.params.id;
+    const updatedData = req.body;
+    const asset = await AssetDetails.findById(assetId);
+
+    if (!asset) {
+      return res.status(404).json({ error: 'Asset not found' });
+    }
+
+    // Update the asset data
+    asset.assetType = updatedData.assetType;
+    asset.Quantity = updatedData.Quantity;
+    asset.unitPrice = updatedData.unitPrice;
+    asset.totalPrice = updatedData.totalPrice;
+
+    // Save the updated asset
+    await asset.save();
+
+    res.status(200).json({ message: 'Asset updated successfully', asset });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// progresslevel
+app.post('/updateProgressLevel/:id', async (req, res) => {
+  try {
+    const assetId = req.params.id;
+    const { progressLevel } = req.body;
+
+    const asset = await AssetDetails.findById(assetId);
+
+
+    if (!asset) {
+      return res.status(404).json({ error: 'Asset not found' });
+    }
+
+    asset.ProgressLevel = progressLevel;
+
+    await asset.save();
+
+    res.status(200).json({ message: 'ProgressLevel updated successfully', asset });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Reject asset endpoint
+app.post('/rejectAsset/:id', async (req, res) => {
+  try {
+    const assetId = req.params.id;
+    const asset = await AssetDetails.findById(assetId);
+
+    if (!asset) {
+      return res.status(404).json({ error: 'Asset not found' });
+    }
+
+    asset.status = 'Rejected';
+    await asset.save();
+
+    res.status(200).json({ message: 'Asset rejected successfully', asset });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Form submission endpoint
+app.post('/submitForm', async (req, res) => {
+  try {
+
+    const formData = req.body; 
+    const assetId = formData._id; // Assume _id is sent from the frontend when modifying
+
+    if (assetId) {
+      // If assetId is provided, update the existing asset
+      const existingAsset = await AssetDetails.findById(assetId);
+
+      if (!existingAsset) {
+        return res.status(404).json({ error: 'Asset not found for modification' });
+      }
+
+      existingAsset.assetType = formData.assetType;
+      existingAsset.Quantity = formData.Quantity;
+      existingAsset.unitPrice = formData.unitPrice;
+      existingAsset.totalPrice = formData.totalPrice;
+
+      // Add CreatedBy field when updating the asset
+      existingAsset.CreatedBy = formData.CreatedBy;
+
+      await existingAsset.save();
+
+      res.status(200).json({ message: 'Asset updated successfully', asset: existingAsset });
+    } else {
+      // If assetId is not provided, create a new asset
+      // Fetch user details based on the submitted email
+      const user = await User.findOne({ email: 'shaikdadavali092@gmail.com' });
+
+    
+    
+      if (!user) {
+        return res.status(404).json({ error: 'User not found for the submitted email' });
+      }
+
+            
+      // const urlToStore = 'https://publuu.com/flip-book/403396/913151/page/1';
+ 
+      
+
+      // if (!urlToStore) {
+      //   return res.status(400).json({ error: 'URL is required in the form data' });
+      // }    
+      // console.log( urlToStore);       
+
+
+      const asset = await AssetDetails.create({
+        ...formData,
+        // Add CreatedBy field with the user's name when creating a new asset
+        CreatedBy: user.CreatedBy,
+        //  url:urlToStore,
+      });
+
+      await sendEmail(asset, 'vemanasrikanth73829@gmail.com');
+      res.status(200).json({ message: 'Form submitted successfully', asset });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Get all assets endpoint
+app.get('/getData', async (req, res) => {
+  try {
+    const assets = await AssetDetails.find();
+    res.status(200).json({ message: 'Assets fetched successfully', assets });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Function to send email
+const sendEmail = async (formData, toEmail,attachmentUrl) => {
+  try {
+    // Nodemailer configuration
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'shaikdadavali092@gmail.com',
+        pass: 'hhwp sfvi pvlr ufzx',
+      },
+    });
+
+   
+    // Email content
+    const emailContent = `
+       <h2>Form Data</h2>
+       <table border="1">
+         <tr>
+           <td>Select_Asset</td>
+           <td>${formData.assetType}</td>
+         </tr>
+         <td>Quantity</td>
+           <td>${formData.Quantity}</td>
+         </tr>
+         <tr>
+           <td>Unit Price</td>
+           <td>${formData.unitPrice}</td>
+         </tr>
+         <tr>
+           <td>Total price</td>
+           <td>${formData.totalPrice}</td>
+         </tr>
+       </table>
+       <p>Click <a href="http://localhost:3000/inboxpage">here</a> to view the details in the application.</p>
+      
+      //  <p>Click <a href="https://publuu.com/flip-book/403396/913151/page/1">here</a> to view the laptop Pdf.</p>
+
+       
+     `;
+
+    // Mail options
+    const mailOptions = {
+      from: 'your@.com',
+      to: toEmail,
+      subject: 'Form Submission',
+      html: emailContent,
+      attachments: [
+        {
+          filename: 'laptop.pdf',
+          path: formData.url, // Path to the PDF file on the server
+          encoding: 'base64',
+        },
+      ],
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully');
+  } catch (error) {
+    console.error('Failed to send email:', error);
+    throw error;
+  }
+};
+
+// Serve PDF file
+app.get('/getPdf/:id', async (req, res) => {
+  try {
+    const assetId = req.params.id;
+    const asset = await AssetDetails.findById(assetId);
+    if (!asset || !asset.url) {
+      return res.status(404).json({ error: 'PDF not found for this asset' });
+    }
+
+    const url = asset.url;
+   console.log(url)
+    // Redirect to the PDF URL
+    res.redirect(url);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`API Server is running on port ${port}`);
+});
